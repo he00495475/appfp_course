@@ -85,6 +85,9 @@ class _CourseListItemState extends State<CourseListItem> {
             ),
             childrenPadding: EdgeInsets.zero,
             subtitle: Text('日期: ${widget.course.courseDate}'),
+            trailing: Icon(
+              isExpanded ? Icons.remove : Icons.add,
+            ),
             initiallyExpanded: isExpanded,
             onExpansionChanged: (value) {
               if (value) {
