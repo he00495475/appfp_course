@@ -84,7 +84,8 @@ class _CourseListItemState extends State<CourseListItem> {
               side: BorderSide.none,
             ),
             childrenPadding: EdgeInsets.zero,
-            subtitle: Text('日期: ${widget.course.courseDate}'),
+            subtitle: Text(
+                '${widget.course.courseWeek} ${widget.course.courseStartTime} - ${widget.course.courseEndTime}'),
             trailing: Icon(
               isExpanded ? Icons.remove : Icons.add,
             ),

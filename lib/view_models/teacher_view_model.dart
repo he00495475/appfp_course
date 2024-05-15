@@ -1,11 +1,11 @@
 import 'package:appfp_course/service/api_service.dart';
 import 'package:flutter/material.dart';
-import '../models/course.dart';
+import '../models/teacher.dart';
 
-class CourseViewModel extends ChangeNotifier {
-  List<Course> _courses = [];
+class TeacherViewModel extends ChangeNotifier {
+  List<Teacher> _teachers = [];
 
-  List<Course> get courses => _courses;
+  List<Teacher> get teachers => _teachers;
 
   int _expandedIndex = -1; // 初始值為-1，表示沒有展開的ExpansionTile
   int get expandedIndex => _expandedIndex;
@@ -17,14 +17,14 @@ class CourseViewModel extends ChangeNotifier {
   }
 
   //取得所有課程
-  void fetchCourses() async {
-    final courses = await ApiService.getCourseList();
+  void fetchTeachers() async {
+    final teachers = await ApiService.getTeacherList();
 
-    if (courses == null) {
+    if (teachers == null) {
       return;
     }
 
-    _courses = courses.map((e) => Course.fromJson(e)).toList();
+    _teachers = teachers.map((e) => Teacher.fromJson(e)).toList();
 
     notifyListeners();
   }

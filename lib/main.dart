@@ -1,3 +1,5 @@
+import 'package:appfp_course/view_models/teacher_view_model.dart';
+import 'package:appfp_course/views/teachers_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +12,7 @@ import 'views/courses_page.dart';
 enum BottomNavItem {
   student,
   course,
+  teacher,
 }
 
 const supabaseUrl = 'https://yigvkdionhriaysvncqo.supabase.co';
@@ -33,6 +36,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => CourseViewModel()),
         ChangeNotifierProvider(create: (_) => CustomerViewModel()),
+        ChangeNotifierProvider(create: (_) => TeacherViewModel()),
       ],
       child: MaterialApp(
         title: 'Flutter MVVM Demo',
@@ -51,13 +55,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _future = Supabase.instance.client.from('users').select();
-
   BottomNavItem _selectedItem = BottomNavItem.student;
 
   final List<Widget> _widgetOptions = <Widget>[
-    StudentHomePage(),
-    CoursesPage(),
+    const StudentHomePage(),
+    const CoursesPage(),
+    const TeachersPage(),
   ];
 
   @override
@@ -80,6 +83,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.exit_to_app),
                   label: '我的課程',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.exit_to_app),
+                  label: '講師清單',
                 ),
               ],
             ),

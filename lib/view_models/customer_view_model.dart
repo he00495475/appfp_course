@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:appfp_course/service/api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/customer.dart';
 
 class CustomerViewModel extends ChangeNotifier {

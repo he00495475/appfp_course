@@ -25,4 +25,13 @@ class ApiService {
 
     return courseList;
   }
+
+  // 取得老師清單
+  static Future<List<Map<String, dynamic>>?> getTeacherList() async {
+    final teacherList = await Supabase.instance.client
+        .from('teachers')
+        .select('*, jobs(*), courses(*)');
+
+    return teacherList;
+  }
 }

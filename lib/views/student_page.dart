@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class StudentPage extends StatelessWidget {
+  const StudentPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -8,14 +10,16 @@ class StudentPage extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: StudentHomePage(),
+      home: const StudentHomePage(),
     );
   }
 }
 
 class StudentHomePage extends StatefulWidget {
+  const StudentHomePage({super.key});
+
   @override
-  _StudentHomePageState createState() => _StudentHomePageState();
+  State<StudentHomePage> createState() => _StudentHomePageState();
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
@@ -36,7 +40,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student Profile'),
+        title: const Text('Student Profile'),
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
