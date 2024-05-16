@@ -1,3 +1,4 @@
+import 'package:appfp_course/view_models/room_view_model.dart';
 import 'package:appfp_course/view_models/teacher_view_model.dart';
 import 'package:appfp_course/views/teachers_page.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CourseViewModel()),
         ChangeNotifierProvider(create: (_) => CustomerViewModel()),
         ChangeNotifierProvider(create: (_) => TeacherViewModel()),
+        ChangeNotifierProvider(create: (_) => ClassRoomViewModel()),
       ],
       child: MaterialApp(
         title: 'Flutter MVVM Demo',

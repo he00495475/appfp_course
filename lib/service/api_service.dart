@@ -1,3 +1,4 @@
+import 'package:appfp_course/models/courseCreate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ApiService {
@@ -33,5 +34,18 @@ class ApiService {
         .select('*, jobs(*), courses(*)');
 
     return teacherList;
+  }
+
+  // 取得房間清單
+  static Future<List<Map<String, dynamic>>?> getRoomList() async {
+    final roomList =
+        await Supabase.instance.client.from('classroom').select('*');
+
+    return roomList;
+  }
+
+  // 老師新增課程
+  void courseCreate(CourseCreate courseCreate) async {
+    await Supabase.instance.client.from('courses').insert(courseCreate);
   }
 }

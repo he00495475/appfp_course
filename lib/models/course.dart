@@ -1,4 +1,4 @@
-import 'package:appfp_course/models/class_room.dart';
+import 'package:appfp_course/models/classRoom.dart';
 import 'package:appfp_course/models/teacher.dart';
 import 'package:intl/intl.dart';
 

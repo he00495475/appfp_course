@@ -1,3 +1,5 @@
+import 'package:appfp_course/views/courses_add_page.dart';
+import 'package:appfp_course/views/courses_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/teacher_view_model.dart';
@@ -26,7 +28,7 @@ class TeachersPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddTeacherPage(),
+                  builder: (context) => const CourseAddsPage(),
                 ),
               );
             },
@@ -140,21 +142,6 @@ class _TeacherListItemState extends State<TeacherListItem> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-// 添加課程頁面
-class AddTeacherPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('添加課程'),
-      ),
-      body: Center(
-        child: Text('這裡是添加課程頁面'),
       ),
     );
   }
