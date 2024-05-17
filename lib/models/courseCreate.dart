@@ -1,8 +1,3 @@
-import 'package:appfp_course/models/classRoom.dart';
-import 'package:appfp_course/models/course.dart';
-import 'package:appfp_course/models/teacher.dart';
-import 'package:intl/intl.dart';
-
 class CourseCreate {
   final String name;
   final String descript;

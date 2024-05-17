@@ -1,3 +1,4 @@
+import 'package:appfp_course/helper/databaseHelper.dart';
 import 'package:appfp_course/view_models/course_view_model.dart';
 import 'package:appfp_course/view_models/room_view_model.dart';
 import 'package:flutter/material.dart';
@@ -31,9 +32,18 @@ class CourseAddListItem extends StatefulWidget {
 }
 
 class _CourseAddListItemState extends State<CourseAddListItem> {
+  //表單驗證為空
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey =
-      GlobalKey<ScaffoldState>(); // Add a GlobalKey for ScaffoldState
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  //sqfLite
+  late DatabaseHelper databaseHelper;
+
+  @override
+  void initState() {
+    super.initState();
+    databaseHelper = DatabaseHelper();
+  }
 
   final TextEditingController _descriptController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -50,8 +60,9 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
     final rooms = classRoomViewModel.classRooms;
 
     //送出表單
-    void submit() {
-      //這邊簡單做驗證
+    void submit() async {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
+      //這邊簡單做每週選擇驗證
       if (selectedDays.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -63,6 +74,10 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
         return;
       }
 
+      //取得登入者資訊
+      List<Map<String, dynamic>> data = await databaseHelper.getData();
+      final customer = data.first;
+
       final courseViewModel = CourseViewModel();
       courseViewModel.submitData(
           name: _nameController.text,
@@ -73,7 +88,7 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
           courseStartTime: '${_startTime.hour}:${_startTime.minute}',
           courseEndTime: '${_endTime.hour}:${_endTime.minute}',
           classRoomId: int.parse(selectedRoom),
-          teacherId: 1);
+          teacherId: customer['id']);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -209,6 +224,10 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                       onPressed: () {
                         // 取消按鈕操作
                       },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
+                      ),
                       child: const Text('取消'),
                     ),
                     ElevatedButton(
@@ -219,7 +238,11 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                           submit();
                         }
                       },
-                      child: const Text('送出'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text('確認'),
                     ),
                   ],
                 ),

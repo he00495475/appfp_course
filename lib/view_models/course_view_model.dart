@@ -1,4 +1,3 @@
-import 'package:appfp_course/models/classRoom.dart';
 import 'package:appfp_course/models/courseCreate.dart';
 import 'package:appfp_course/service/api_service.dart';
 import 'package:flutter/material.dart';

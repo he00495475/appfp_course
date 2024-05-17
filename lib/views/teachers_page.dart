@@ -1,5 +1,4 @@
 import 'package:appfp_course/views/courses_add_page.dart';
-import 'package:appfp_course/views/courses_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/teacher_view_model.dart';
@@ -20,20 +19,6 @@ class TeachersPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('講師清單'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              // 在按下按鈕時跳轉到添加課程頁面
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CourseAddsPage(),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: ListView.builder(
         key: Key(teacherViewModel.expandedIndex.toString()),

@@ -10,7 +10,6 @@ class CoursesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final courseViewModel = Provider.of<CourseViewModel>(context);
-
     // 在頁面加載時調用fetchCourses()
     WidgetsBinding.instance.addPostFrameCallback((_) {
       courseViewModel.fetchCourses();
@@ -27,7 +26,7 @@ class CoursesPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CourseAddsPage(),
+                  builder: (context) => const CourseAddsPage(),
                 ),
               );
             },

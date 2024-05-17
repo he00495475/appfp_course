@@ -1,3 +1,5 @@
+import 'package:appfp_course/helper/databaseHelper.dart';
+import 'package:path/path.dart';
 import 'package:appfp_course/view_models/room_view_model.dart';
 import 'package:appfp_course/view_models/teacher_view_model.dart';
 import 'package:appfp_course/views/teachers_page.dart';
@@ -7,7 +9,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'view_models/customer_view_model.dart';
 import 'view_models/course_view_model.dart';
 import 'views/login_page.dart';
-import 'views/student_page.dart';
 import 'views/courses_page.dart';
 
 enum BottomNavItem {
@@ -21,16 +22,17 @@ const supabaseKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZ3ZrZGlvbmhyaWF5c3ZuY3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU1MzU0ODIsImV4cCI6MjAzMTExMTQ4Mn0._teNWz-hP5End8gxDk9AHcfZK7HCOnOvArJH7gAKJXA';
 
 Future<void> main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-
   await Supabase.initialize(
       url: supabaseUrl,
       anonKey:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZ3ZrZGlvbmhyaWF5c3ZuY3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU1MzU0ODIsImV4cCI6MjAzMTExMTQ4Mn0._teNWz-hP5End8gxDk9AHcfZK7HCOnOvArJH7gAKJXA');
-  runApp(MyApp());
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -45,22 +47,23 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: MyHomePage(),
+        home: const MyHomePage(),
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   BottomNavItem _selectedItem = BottomNavItem.student;
 
   final List<Widget> _widgetOptions = <Widget>[
-    const StudentHomePage(),
     const CoursesPage(),
     const TeachersPage(),
   ];
@@ -79,22 +82,18 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: _onItemTapped,
               items: const [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: '個人資訊',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.exit_to_app),
+                  icon: Icon(Icons.menu_book),
                   label: '我的課程',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.exit_to_app),
+                  icon: Icon(Icons.people),
                   label: '講師清單',
                 ),
               ],
             ),
           );
         } else {
-          return Scaffold(
+          return const Scaffold(
             body: LoginPage(),
           );
         }

@@ -18,6 +18,20 @@ class ApiService {
     return user;
   }
 
+  // 老師登入
+  static Future<Map<String, dynamic>?> teacherLogin(
+      String account, String password) async {
+    final user = await Supabase.instance.client
+        .from('customers')
+        .select('*, teachers(*)')
+        .eq('account', account)
+        .eq('password', password)
+        .eq('type', 'teacher')
+        .maybeSingle();
+
+    return user;
+  }
+
   // 取得所有課程清單
   static Future<List<Map<String, dynamic>>?> getCourseList() async {
     final courseList = await Supabase.instance.client
