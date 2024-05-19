@@ -16,6 +16,7 @@ class DatabaseHelper extends ChangeNotifier {
     return _database!;
   }
 
+  // 初始化資料庫db 沒db則自動建立
   Future<Database> initDatabase() async {
     return openDatabase(
       join(await getDatabasesPath(), '$_tableName.db'),
@@ -31,6 +32,7 @@ class DatabaseHelper extends ChangeNotifier {
     );
   }
 
+  // 新增
   Future<void> insertData(Map<String, dynamic> data) async {
     final db = await database;
     await db.insert(
@@ -40,11 +42,13 @@ class DatabaseHelper extends ChangeNotifier {
     );
   }
 
+  // 刪除
   Future<void> clearTable() async {
     final db = await database;
     await db.delete(_tableName);
   }
 
+  // 取得
   Future<List<Map<String, dynamic>>> getData() async {
     final db = await database;
     return await db.query(_tableName);

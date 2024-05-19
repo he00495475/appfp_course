@@ -1,4 +1,5 @@
-class CourseCreate {
+class CourseCreateAndModify {
+  String? id = ''; //supabase送出id為空字串為新增
   final String name;
   final String descript;
   final String courseWeek;
@@ -7,8 +8,9 @@ class CourseCreate {
   final int classRoomId;
   final int teacherId;
 
-  CourseCreate(
-      {required this.name,
+  CourseCreateAndModify(
+      {this.id,
+      required this.name,
       required this.descript,
       required this.courseWeek,
       required this.courseStartTime,
@@ -18,6 +20,7 @@ class CourseCreate {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'descript': descript,
       'course_week': courseWeek,

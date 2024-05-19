@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'package:appfp_course/models/student.dart';
 import 'package:appfp_course/models/teacher.dart';
 import 'package:appfp_course/service/api_service.dart';
@@ -9,6 +10,8 @@ class CustomerViewModel extends ChangeNotifier {
   Customer? _customer;
 
   Customer? get customer => _customer;
+
+  bool get isTeacher => _customer?.type == 'teacher';
 
   Future<String> studentLogin(String account, String password) async {
     final customer = await ApiService.studentLogin(account, password);

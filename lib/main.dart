@@ -1,5 +1,3 @@
-import 'package:appfp_course/helper/databaseHelper.dart';
-import 'package:path/path.dart';
 import 'package:appfp_course/view_models/room_view_model.dart';
 import 'package:appfp_course/view_models/teacher_view_model.dart';
 import 'package:appfp_course/views/teachers_page.dart';
@@ -12,7 +10,6 @@ import 'views/login_page.dart';
 import 'views/courses_page.dart';
 
 enum BottomNavItem {
-  student,
   course,
   teacher,
 }
@@ -61,11 +58,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  BottomNavItem _selectedItem = BottomNavItem.student;
+  BottomNavItem _selectedItem = BottomNavItem.course;
 
   final List<Widget> _widgetOptions = <Widget>[
     const CoursesPage(),
     const TeachersPage(),
+  ];
+
+  final List<BottomNavigationBarItem> _bottomNavigationBarItem =
+      <BottomNavigationBarItem>[
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.menu_book),
+      label: '我的課程',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.people),
+      label: '講師清單',
+    )
   ];
 
   @override
@@ -77,20 +86,13 @@ class _MyHomePageState extends State<MyHomePage> {
             body: Center(
               child: _widgetOptions.elementAt(_selectedItem.index),
             ),
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: _selectedItem.index,
-              onTap: _onItemTapped,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.menu_book),
-                  label: '我的課程',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people),
-                  label: '講師清單',
-                ),
-              ],
-            ),
+            bottomNavigationBar: (userViewModel.isTeacher)
+                ? BottomNavigationBar(
+                    currentIndex: _selectedItem.index,
+                    onTap: _onItemTapped,
+                    items: _bottomNavigationBarItem,
+                  )
+                : null,
           );
         } else {
           return const Scaffold(

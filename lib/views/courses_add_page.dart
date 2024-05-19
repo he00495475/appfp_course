@@ -1,6 +1,10 @@
+import 'package:appfp_course/extension/elevatedButtonExtension.dart';
+import 'package:appfp_course/helper/baseHelper.dart';
 import 'package:appfp_course/helper/databaseHelper.dart';
+import 'package:appfp_course/models/course.dart';
 import 'package:appfp_course/view_models/course_view_model.dart';
 import 'package:appfp_course/view_models/room_view_model.dart';
+import 'package:appfp_course/widgets/coursesAddPage/roomDropdownWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,56 +13,94 @@ class CourseAddsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //帶入模組
     final classRoomViewModel = Provider.of<ClassRoomViewModel>(context);
+    final courseViewModel = Provider.of<CourseViewModel>(context);
 
-    // 在頁面加載時調用fetchCourseAdds()
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      classRoomViewModel.fetchClassRooms();
-    });
+    final pageType = courseViewModel.coursePageType;
+    final title = (pageType == CoursePageType.modify)
+        ? const Text('修改課程')
+        : const Text('新增課程');
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('新增課程'),
+          title: title,
         ),
-        body: const CourseAddListItem());
+        body: CourseAddListItem(
+          classRoomViewModel: classRoomViewModel,
+          courseViewModel: courseViewModel,
+        ));
   }
 }
 
 class CourseAddListItem extends StatefulWidget {
-  const CourseAddListItem({super.key});
+  final ClassRoomViewModel classRoomViewModel;
+  final CourseViewModel courseViewModel;
+
+  const CourseAddListItem({
+    super.key,
+    required this.classRoomViewModel,
+    required this.courseViewModel,
+  });
 
   @override
   State<CourseAddListItem> createState() => _CourseAddListItemState();
 }
 
 class _CourseAddListItemState extends State<CourseAddListItem> {
-  //表單驗證為空
+  // 表單驗證為空
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  //sqfLite
-  late DatabaseHelper databaseHelper;
+  // init course
+  Course course = Course();
 
-  @override
-  void initState() {
-    super.initState();
-    databaseHelper = DatabaseHelper();
-  }
+  // sqfLite
+  final DatabaseHelper databaseHelper = DatabaseHelper();
 
+  // 畫面元件控制
   final TextEditingController _descriptController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   TimeOfDay _startTime = TimeOfDay.now();
   TimeOfDay _endTime = TimeOfDay.now();
   String selectedRoom = '';
-
-  List<String> daysOfWeek = ['一', '二', '三', '四', '五', '六', '日'];
   List<int> selectedDays = [];
 
   @override
-  Widget build(BuildContext context) {
-    final classRoomViewModel = Provider.of<ClassRoomViewModel>(context);
-    final rooms = classRoomViewModel.classRooms;
+  void initState() {
+    super.initState();
+    loadData();
+  }
 
+  // 頁面資料初始化
+  void loadData() {
+    setState(() {
+      // 教室async fetch
+      widget.classRoomViewModel.fetchClassRooms();
+      // modify為修改 帶入course資料
+      if (widget.courseViewModel.coursePageType == CoursePageType.modify) {
+        course =
+            widget.courseViewModel.courses[widget.courseViewModel.modifyIndex];
+      }
+
+      // 控制器預設值給予
+      _nameController.text = course.name;
+      _descriptController.text = course.descript;
+      _startTime = BaseHelper.convertStringToTimeOfDay(
+          course.courseStartTime.toString());
+      _endTime =
+          BaseHelper.convertStringToTimeOfDay(course.courseEndTime.toString());
+
+      final roomIndex = course.classRoom?.id.toString();
+      selectedRoom = roomIndex ?? '';
+
+      final courseWeek = course.courseWeek.replaceAll(' ', '').split(',');
+      selectedDays = BaseHelper.getDaysOfWeekIndexs(courseWeek);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     //送出表單
     void submit() async {
       ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
@@ -74,30 +116,42 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
         return;
       }
 
-      //取得登入者資訊
-      List<Map<String, dynamic>> data = await databaseHelper.getData();
-      final customer = data.first;
-
-      final courseViewModel = CourseViewModel();
-      courseViewModel.submitData(
+      try {
+        // 取得登入者資訊
+        List<Map<String, dynamic>> data = await databaseHelper.getData();
+        final customer = data.first;
+        selectedDays.sort(); // 陣列重新排序
+        //送出
+        widget.courseViewModel.submitData(
+          id: course.id.toString(),
           name: _nameController.text,
           descript: _descriptController.text,
-          courseWeek: selectedDays.map((e) {
-            return "每週${daysOfWeek[e]} ";
-          }).toString(),
-          courseStartTime: '${_startTime.hour}:${_startTime.minute}',
-          courseEndTime: '${_endTime.hour}:${_endTime.minute}',
+          courseWeek: selectedDays
+              .map((e) => BaseHelper.daysOfWeek[e])
+              .join(', '), // 使用join串接選擇的天數
+          courseStartTime:
+              '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}', // 格式化時間
+          courseEndTime:
+              '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}', // 格式化時間
           classRoomId: int.parse(selectedRoom),
-          teacherId: customer['id']);
+          teacherId: customer['id'],
+        );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('新增成功'),
-          backgroundColor: Colors.green, // 设置错误提示的背景色
-        ),
-      );
-
-      Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('新增成功'),
+            backgroundColor: Colors.green, // 設置成功提示的背景色
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('發生錯誤: $e'),
+            backgroundColor: Colors.red, // 設置錯誤提示的背景色
+          ),
+        );
+      }
+      Navigator.pop(context);
     }
 
     return Scaffold(
@@ -132,28 +186,15 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                DropdownButtonFormField(
-                  value: selectedRoom.isEmpty ? null : selectedRoom,
+                RoomDropdown(
+                  selectedRoom: selectedRoom,
                   onChanged: (newValue) {
                     setState(() {
                       selectedRoom = newValue.toString();
                     });
                   },
-                  items: rooms.isNotEmpty
-                      ? rooms.map((room) {
-                          return DropdownMenuItem(
-                            value: room.id.toString(),
-                            child: Text(room.name),
-                          );
-                        }).toList()
-                      : [],
-                  decoration: const InputDecoration(labelText: '課程地點'),
-                  validator: (value) {
-                    if (value == null) {
-                      return '請選擇課程地點';
-                    }
-                    return null;
-                  },
+                  classRooms:
+                      Provider.of<ClassRoomViewModel>(context).classRooms,
                 ),
                 const SizedBox(height: 16.0),
                 Row(
@@ -161,18 +202,18 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                   children: [
                     Text('開始時間: ${_startTime.format(context)}'),
                     ElevatedButton(
-                      onPressed: () async {
-                        final selectedTime = await showTimePicker(
-                          context: context,
-                          initialTime: _startTime,
-                        );
-                        if (selectedTime != null) {
-                          setState(() {
-                            _startTime = selectedTime;
-                          });
-                        }
+                      onPressed: () {},
+                      child: const Text('選擇時間(開始結束)'),
+                    ).withTimePicker(
+                      context,
+                      _startTime,
+                      _endTime,
+                      onTimeSelected: (startTime, endTime) {
+                        setState(() {
+                          _startTime = startTime;
+                          _endTime = endTime;
+                        });
                       },
-                      child: const Text('選擇時間'),
                     ),
                   ],
                 ),
@@ -181,20 +222,6 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('結束時間: ${_endTime.format(context)}'),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedTime = await showTimePicker(
-                          context: context,
-                          initialTime: _endTime,
-                        );
-                        if (selectedTime != null) {
-                          setState(() {
-                            _endTime = selectedTime;
-                          });
-                        }
-                      },
-                      child: const Text('選擇時間'),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -202,7 +229,7 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                   spacing: 10.0,
                   children: List.generate(7, (index) {
                     return FilterChip(
-                      label: Text('每週${daysOfWeek[index]}'),
+                      label: Text('每週${BaseHelper.daysOfWeek[index]}'),
                       selected: selectedDays.contains(index),
                       onSelected: (selected) {
                         setState(() {
@@ -223,6 +250,7 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                     ElevatedButton(
                       onPressed: () {
                         // 取消按鈕操作
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,

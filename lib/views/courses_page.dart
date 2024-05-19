@@ -1,3 +1,4 @@
+import 'package:appfp_course/helper/databaseHelper.dart';
 import 'package:appfp_course/views/courses_add_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,9 +11,21 @@ class CoursesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final courseViewModel = Provider.of<CourseViewModel>(context);
-    // 在頁面加載時調用fetchCourses()
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      courseViewModel.fetchCourses();
+    //sqfLite
+    final databaseHelper = DatabaseHelper();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      List<Map<String, dynamic>> data = await databaseHelper.getData();
+      final customer = data.first;
+      if (customer.isEmpty) {
+        return;
+      } else {
+        if (customer['type'] == 'teacher') {
+          courseViewModel.fetchCoursesByTeacherId(customer['id']);
+        } else {
+          courseViewModel.fetchCoursesByStudentId(customer['id']);
+        }
+      }
     });
 
     return Scaffold(
@@ -23,6 +36,7 @@ class CoursesPage extends StatelessWidget {
             icon: const Icon(Icons.add),
             onPressed: () {
               // 在按下按鈕時跳轉到添加課程頁面
+              courseViewModel.coursePageType = CoursePageType.add;
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -39,7 +53,7 @@ class CoursesPage extends StatelessWidget {
         itemBuilder: (context, index) {
           final course = courseViewModel.courses[index];
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的间距为8.0
+            padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的間距為8.0
             child: CourseListItem(
               course: course,
               index: index,
@@ -85,10 +99,24 @@ class _CourseListItemState extends State<CourseListItem> {
             ),
             childrenPadding: EdgeInsets.zero,
             subtitle: Text(
-                '${widget.course.courseWeek} ${widget.course.courseStartTime} - ${widget.course.courseEndTime}'),
-            trailing: Icon(
-              isExpanded ? Icons.remove : Icons.add,
-            ),
+                '每週${widget.course.courseWeek} ${widget.course.courseStartTime} - ${widget.course.courseEndTime}'),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  //點擊跳轉詳細頁
+                  courseViewModel.coursePageType = CoursePageType.modify;
+                  courseViewModel.modifyIndex = widget.index;
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CourseAddsPage()));
+                },
+              ),
+              Icon(
+                isExpanded ? Icons.remove : Icons.add,
+              )
+            ]),
             initiallyExpanded: isExpanded,
             onExpansionChanged: (value) {
               if (value) {

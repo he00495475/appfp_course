@@ -1,9 +1,9 @@
-import 'package:appfp_course/models/classRoom.dart';
+import 'package:appfp_course/models/class_room.dart';
 import 'package:appfp_course/models/teacher.dart';
 import 'package:intl/intl.dart';
 
 class Course {
-  final int id;
+  final int id; //這邊因為supabase回傳int
   final String name;
   final String descript;
   final String courseWeek;
@@ -13,14 +13,14 @@ class Course {
   final Teacher? teacher;
 
   Course(
-      {required this.id,
-      required this.name,
-      required this.descript,
-      required this.courseWeek,
-      required this.courseStartTime,
-      required this.courseEndTime,
-      required this.classRoom,
-      required this.teacher});
+      {this.id = 0,
+      this.name = '',
+      this.descript = '',
+      this.courseWeek = '',
+      this.courseStartTime = '',
+      this.courseEndTime = '',
+      this.classRoom,
+      this.teacher});
 
   factory Course.fromJson(Map<String, dynamic> json) {
     DateTime startTime =
