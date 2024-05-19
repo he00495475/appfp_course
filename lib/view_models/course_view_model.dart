@@ -1,16 +1,22 @@
-import 'package:appfp_course/models/course_create_and_modify.dart';
+import 'package:appfp_course/models/course_create.dart';
+import 'package:appfp_course/models/course_modify.dart';
 import 'package:appfp_course/service/api_service.dart';
 import 'package:flutter/material.dart';
 import '../models/course.dart';
 
 enum CoursePageType { add, modify }
 
+enum UserType { teacher, student }
+
 class CourseViewModel extends ChangeNotifier {
   List<Course> _courses = [];
   List<Course> get courses => _courses;
 
+  Course course = Course(); //修改課程 or 加入課程用
+
   CoursePageType coursePageType = CoursePageType.add; //決定新增還是修改頁面
-  int modifyIndex = 0; //修改課程 or 加入課程用id
+
+  UserType userType = UserType.teacher; //老師還是學生在操作頁面
 
   int _expandedIndex = -1; // 初始值為-1，表示沒有展開的ExpansionTile
   int get expandedIndex => _expandedIndex;
@@ -43,9 +49,8 @@ class CourseViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 老師新增修改課程
-  void submitData({
-    String? id,
+  // 老師新增課程
+  addCourse({
     required String name,
     required String descript,
     required String courseWeek,
@@ -55,7 +60,32 @@ class CourseViewModel extends ChangeNotifier {
     required int teacherId,
   }) {
     // 在這裡執行資料提交操作，例如將資料發送到伺服器
-    final course = CourseCreateAndModify(
+    final course = CourseCreate(
+      name: name,
+      descript: descript,
+      courseWeek: courseWeek.replaceAll('(', '').replaceAll(')', ''),
+      courseStartTime: courseStartTime,
+      courseEndTime: courseEndTime,
+      classRoomId: classRoomId,
+      teacherId: teacherId,
+    );
+    final api = ApiService();
+    api.courseCreate(course);
+  }
+
+  // 老師修改課程
+  modifyCourse({
+    required int id,
+    required String name,
+    required String descript,
+    required String courseWeek,
+    required String courseStartTime,
+    required String courseEndTime,
+    required int classRoomId,
+    required int teacherId,
+  }) {
+    // 在這裡執行資料提交操作，例如將資料發送到伺服器
+    final course = CourseModify(
       id: id,
       name: name,
       descript: descript,
@@ -66,11 +96,11 @@ class CourseViewModel extends ChangeNotifier {
       teacherId: teacherId,
     );
     final api = ApiService();
-    final reId = id as String;
-    if (reId.isNotEmpty) {
-      api.courseModify(course);
-    } else {
-      api.courseCreate(course);
-    }
+    api.courseModify(course);
+  }
+
+  Future<void> deleteCourse(int courseId) async {
+    final api = ApiService();
+    api.courseDelete(courseId);
   }
 }

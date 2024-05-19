@@ -1,3 +1,4 @@
+import 'package:appfp_course/view_models/course_view_model.dart';
 import 'package:appfp_course/views/courses_add_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,7 @@ class TeachersPage extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的间距为8.0
             child: TeacherListItem(
+              teacherViewModel: teacherViewModel,
               teacher: teacher,
               index: index,
             ),
@@ -39,22 +41,35 @@ class TeachersPage extends StatelessWidget {
 }
 
 class TeacherListItem extends StatefulWidget {
+  final TeacherViewModel teacherViewModel;
   final Teacher teacher;
   final int index;
 
   const TeacherListItem(
-      {super.key, required this.teacher, required this.index});
+      {super.key,
+      required this.teacher,
+      required this.index,
+      required this.teacherViewModel});
 
   @override
   State<TeacherListItem> createState() => _TeacherListItemState();
 }
 
 class _TeacherListItemState extends State<TeacherListItem> {
+  late final bool isExpanded;
+
+  void loadData() {
+    isExpanded = widget.teacherViewModel.expandedIndex == widget.index;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final teacherViewModel = Provider.of<TeacherViewModel>(context);
-    final isExpanded = teacherViewModel.expandedIndex == widget.index;
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
@@ -86,15 +101,15 @@ class _TeacherListItemState extends State<TeacherListItem> {
               side: BorderSide.none,
             ),
             childrenPadding: EdgeInsets.zero,
-            // subtitle: Text('日期: ${widget.teacher.teacherDate}'),
             initiallyExpanded: isExpanded,
             onExpansionChanged: (value) {
-              if (value) {
-                teacherViewModel.setExpandedIndex(widget.index);
-              } else {
-                teacherViewModel.setExpandedIndex(-1);
-              }
-              setState(() {});
+              setState(() {
+                if (value) {
+                  widget.teacherViewModel.setExpandedIndex(widget.index);
+                } else {
+                  widget.teacherViewModel.setExpandedIndex(-1);
+                }
+              });
             },
             children: <Widget>[
               const Divider(
@@ -113,14 +128,19 @@ class _TeacherListItemState extends State<TeacherListItem> {
                   return ListTile(
                     title: Text(widget.teacher.courses![innerIndex].name),
                     subtitle: Text(
-                        '${widget.teacher.courses![innerIndex].courseWeek} ${widget.teacher.courses![innerIndex].courseStartTime} - ${widget.teacher.courses![innerIndex].courseEndTime}'),
+                        '每週${widget.teacher.courses![innerIndex].courseWeek} ${widget.teacher.courses![innerIndex].courseStartTime} - ${widget.teacher.courses![innerIndex].courseEndTime}'),
                     leading: Image.asset(
                       'assets/images/calendar.jpg',
                       width: 35,
                       height: 35,
                       fit: BoxFit.cover, // 圖片的填充方式
                     ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 18,
+                    ),
                     dense: true,
+                    onTap: () {},
                   );
                 },
               ),

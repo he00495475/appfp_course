@@ -3,7 +3,7 @@ import 'package:appfp_course/models/teacher.dart';
 import 'package:intl/intl.dart';
 
 class Course {
-  final int id; //這邊因為supabase回傳int
+  final int id;
   final String name;
   final String descript;
   final String courseWeek;
@@ -12,15 +12,16 @@ class Course {
   final ClassRoom? classRoom;
   final Teacher? teacher;
 
-  Course(
-      {this.id = 0,
-      this.name = '',
-      this.descript = '',
-      this.courseWeek = '',
-      this.courseStartTime = '',
-      this.courseEndTime = '',
-      this.classRoom,
-      this.teacher});
+  Course({
+    this.id = 0,
+    this.name = '',
+    this.descript = '',
+    this.courseWeek = '',
+    this.courseStartTime = '',
+    this.courseEndTime = '',
+    this.classRoom,
+    this.teacher,
+  });
 
   factory Course.fromJson(Map<String, dynamic> json) {
     DateTime startTime =

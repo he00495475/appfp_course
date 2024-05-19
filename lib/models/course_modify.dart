@@ -1,5 +1,5 @@
-class CourseCreateAndModify {
-  String? id = ''; //supabase送出id為空字串為新增
+class CourseModify {
+  final int id;
   final String name;
   final String descript;
   final String courseWeek;
@@ -8,8 +8,8 @@ class CourseCreateAndModify {
   final int classRoomId;
   final int teacherId;
 
-  CourseCreateAndModify(
-      {this.id,
+  CourseModify(
+      {required this.id,
       required this.name,
       required this.descript,
       required this.courseWeek,

@@ -65,11 +65,17 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
   TimeOfDay _endTime = TimeOfDay.now();
   String selectedRoom = '';
   List<int> selectedDays = [];
+  List<Map<String, dynamic>> sqlData = [];
 
   @override
   void initState() {
     super.initState();
+    loadCustomer();
     loadData();
+  }
+
+  void loadCustomer() async {
+    sqlData = await databaseHelper.getData();
   }
 
   // 頁面資料初始化
@@ -79,8 +85,7 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       widget.classRoomViewModel.fetchClassRooms();
       // modify為修改 帶入course資料
       if (widget.courseViewModel.coursePageType == CoursePageType.modify) {
-        course =
-            widget.courseViewModel.courses[widget.courseViewModel.modifyIndex];
+        course = widget.courseViewModel.course;
       }
 
       // 控制器預設值給予
@@ -99,61 +104,88 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    //送出表單
-    void submit() async {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
-      //這邊簡單做每週選擇驗證
-      if (selectedDays.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('請選擇每週上課日'),
-            backgroundColor: Colors.red, // 设置错误提示的背景色
-          ),
-        );
+  void addCourse() {
+    final customer = sqlData.first;
+    widget.courseViewModel.addCourse(
+      name: _nameController.text,
+      descript: _descriptController.text,
+      courseWeek: selectedDays
+          .map((e) => BaseHelper.daysOfWeek[e])
+          .join(', '), // 使用join串接選擇的天數
+      courseStartTime:
+          '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}', // 格式化時間
+      courseEndTime:
+          '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}', // 格式化時間
+      classRoomId: int.parse(selectedRoom),
+      teacherId: customer['id'],
+    );
+  }
 
-        return;
-      }
+  void modifyCourse() {
+    final customer = sqlData.first;
+    widget.courseViewModel.modifyCourse(
+      id: course.id,
+      name: _nameController.text,
+      descript: _descriptController.text,
+      courseWeek: selectedDays
+          .map((e) => BaseHelper.daysOfWeek[e])
+          .join(', '), // 使用join串接選擇的天數
+      courseStartTime:
+          '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}', // 格式化時間
+      courseEndTime:
+          '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}', // 格式化時間
+      classRoomId: int.parse(selectedRoom),
+      teacherId: customer['id'],
+    );
+  }
 
-      try {
-        // 取得登入者資訊
-        List<Map<String, dynamic>> data = await databaseHelper.getData();
-        final customer = data.first;
-        selectedDays.sort(); // 陣列重新排序
-        //送出
-        widget.courseViewModel.submitData(
-          id: course.id.toString(),
-          name: _nameController.text,
-          descript: _descriptController.text,
-          courseWeek: selectedDays
-              .map((e) => BaseHelper.daysOfWeek[e])
-              .join(', '), // 使用join串接選擇的天數
-          courseStartTime:
-              '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}', // 格式化時間
-          courseEndTime:
-              '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}', // 格式化時間
-          classRoomId: int.parse(selectedRoom),
-          teacherId: customer['id'],
-        );
+  //送出表單
+  void submit() async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
+    //這邊簡單做每週選擇驗證
+    if (selectedDays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('請選擇每週上課日'),
+          backgroundColor: Colors.red,
+        ),
+      );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('新增成功'),
-            backgroundColor: Colors.green, // 設置成功提示的背景色
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('發生錯誤: $e'),
-            backgroundColor: Colors.red, // 設置錯誤提示的背景色
-          ),
-        );
-      }
-      Navigator.pop(context);
+      return;
     }
 
+    try {
+      // 取得登入者資訊
+      final customer = sqlData.first;
+
+      selectedDays.sort(); // 陣列重新排序
+      //送出
+      final pageType = widget.courseViewModel.coursePageType;
+      if (pageType == CoursePageType.modify) {
+        modifyCourse();
+      } else {
+        addCourse();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('新增成功'),
+          backgroundColor: Colors.green, // 設置成功提示的背景色
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('發生錯誤: $e'),
+          backgroundColor: Colors.red, // 設置錯誤提示的背景色
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       body: Padding(

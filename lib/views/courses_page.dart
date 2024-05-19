@@ -1,5 +1,6 @@
 import 'package:appfp_course/helper/databaseHelper.dart';
 import 'package:appfp_course/views/courses_add_page.dart';
+import 'package:appfp_course/widgets/alertWidget/iconButtonConfirmActionWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/course_view_model.dart';
@@ -55,6 +56,7 @@ class CoursesPage extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的間距為8.0
             child: CourseListItem(
+              courseViewModel: courseViewModel,
               course: course,
               index: index,
             ),
@@ -66,20 +68,37 @@ class CoursesPage extends StatelessWidget {
 }
 
 class CourseListItem extends StatefulWidget {
+  final CourseViewModel courseViewModel;
   final Course course;
   final int index;
 
-  const CourseListItem({super.key, required this.course, required this.index});
+  const CourseListItem(
+      {super.key,
+      required this.courseViewModel,
+      required this.course,
+      required this.index});
 
   @override
   State<CourseListItem> createState() => _CourseListItemState();
 }
 
 class _CourseListItemState extends State<CourseListItem> {
+  // 刪除課程
+  void deleteCourse(int index) {
+    widget.courseViewModel.deleteCourse(index);
+  }
+
+  Widget listTile(String title, String subtitle) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(subtitle),
+      dense: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final courseViewModel = Provider.of<CourseViewModel>(context);
-    final isExpanded = courseViewModel.expandedIndex == widget.index;
+    final isExpanded = widget.courseViewModel.expandedIndex == widget.index;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -101,12 +120,20 @@ class _CourseListItemState extends State<CourseListItem> {
             subtitle: Text(
                 '每週${widget.course.courseWeek} ${widget.course.courseStartTime} - ${widget.course.courseEndTime}'),
             trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              IconButtonConfirmActionWidget(
+                titleMessage: '是否刪除課程??',
+                subMessage: '課程名稱：${widget.course.name}',
+                onConfirm: () {
+                  deleteCourse(widget.course.id);
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   //點擊跳轉詳細頁
-                  courseViewModel.coursePageType = CoursePageType.modify;
-                  courseViewModel.modifyIndex = widget.index;
+                  widget.courseViewModel.coursePageType = CoursePageType.modify;
+                  // widget.courseViewModel.courseId = widget.course.id;
+                  widget.courseViewModel.course = widget.course;
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -120,9 +147,9 @@ class _CourseListItemState extends State<CourseListItem> {
             initiallyExpanded: isExpanded,
             onExpansionChanged: (value) {
               if (value) {
-                courseViewModel.setExpandedIndex(widget.index);
+                widget.courseViewModel.setExpandedIndex(widget.index);
               } else {
-                courseViewModel.setExpandedIndex(-1);
+                widget.courseViewModel.setExpandedIndex(-1);
               }
               setState(() {});
             },
@@ -134,21 +161,9 @@ class _CourseListItemState extends State<CourseListItem> {
                 indent: 15.0,
                 endIndent: 15.0,
               ),
-              ListTile(
-                title: const Text("地點："),
-                subtitle: Text(widget.course.classRoom?.name ?? ''),
-                dense: true,
-              ),
-              ListTile(
-                title: const Text("老師："),
-                subtitle: Text(widget.course.teacher?.name ?? ''),
-                dense: true,
-              ),
-              ListTile(
-                title: const Text("課程說明："),
-                subtitle: Text(widget.course.descript),
-                dense: true,
-              ),
+              listTile('地點：', widget.course.classRoom?.name ?? ''),
+              listTile('老師：', widget.course.teacher?.name ?? ''),
+              listTile('課程說明：', widget.course.descript),
             ],
           ),
         ],
