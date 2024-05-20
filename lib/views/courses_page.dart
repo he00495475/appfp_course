@@ -4,7 +4,6 @@ import 'package:appfp_course/widgets/alertWidget/iconButtonConfirmActionWidget.d
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/course_view_model.dart';
-import '../models/course.dart';
 
 class CoursesPage extends StatelessWidget {
   const CoursesPage({super.key});

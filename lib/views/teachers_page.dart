@@ -1,4 +1,3 @@
-import 'package:appfp_course/models/course.dart';
 import 'package:appfp_course/view_models/course_view_model.dart';
 import 'package:appfp_course/views/courses_add_page.dart';
 import 'package:flutter/material.dart';

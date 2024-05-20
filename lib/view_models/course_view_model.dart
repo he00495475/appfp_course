@@ -1,6 +1,5 @@
 import 'package:appfp_course/models/course_create.dart';
 import 'package:appfp_course/models/course_modify.dart';
-import 'package:appfp_course/models/student_course.dart';
 import 'package:appfp_course/models/student_course_create.dart';
 import 'package:appfp_course/models/student_course_modify.dart';
 import 'package:appfp_course/service/api_service.dart';

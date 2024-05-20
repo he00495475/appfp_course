@@ -1,7 +1,5 @@
 import 'package:appfp_course/helper/databaseHelper.dart';
 import 'package:appfp_course/main.dart';
-import 'package:appfp_course/view_models/customer_view_model.dart';
-import 'package:appfp_course/views/login_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -32,14 +30,6 @@ class _HomeHomePageState extends State<_HomePage> {
     super.initState();
     databaseHelper = DatabaseHelper();
     loadData();
-  }
-
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   void loadData() async {
