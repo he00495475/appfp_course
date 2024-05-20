@@ -28,8 +28,6 @@ class MyWidget extends StatefulWidget {
 }
 
 class _MyWidgetState extends State<MyWidget> {
-  final bool _isTeacherLogin = false; // 變數用來判斷是否是老師登入，預設是學生登入
-
   final _accountController = TextEditingController();
   final _passwordController = TextEditingController();
   //sqfLite
@@ -86,7 +84,13 @@ class _MyWidgetState extends State<MyWidget> {
                     .showSnackBar(SnackBar(content: Text(errMessage)))
               }
             else
-              {setSqfLite()}
+              {
+                setSqfLite(),
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('登入成功'),
+                  backgroundColor: Colors.green,
+                ))
+              }
           });
       setState(() {});
     }
