@@ -1,4 +1,5 @@
 import 'package:appfp_course/helper/databaseHelper.dart';
+import 'package:appfp_course/views/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/customer_view_model.dart';
@@ -153,6 +154,14 @@ class _MyWidgetState extends State<MyWidget> {
               },
               child: const Text('登入'),
             ),
+            // if (_selectedLoginIndex == 1)
+            //   ElevatedButton(
+            //     onPressed: () async {
+            //       Navigator.push(context,
+            //           MaterialPageRoute(builder: (context) => RegisterPage()));
+            //     },
+            //     child: const Text('註冊'),
+            //   ),
           ],
         ),
       ),

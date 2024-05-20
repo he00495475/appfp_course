@@ -254,12 +254,13 @@ class _CourseListItemState extends State<CourseListItem> {
                                       const CourseAddsPage()));
                         },
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.person),
-                        onPressed: () {
-                          studentList(course!.studentCourses);
-                        },
-                      )
+                      if (customer['type'] == 'teacher')
+                        IconButton(
+                          icon: const Icon(Icons.person),
+                          onPressed: () {
+                            studentList(course!.studentCourses);
+                          },
+                        )
                     ]),
                     initiallyExpanded: isExpanded,
                     onExpansionChanged: (value) {
@@ -278,20 +279,6 @@ class _CourseListItemState extends State<CourseListItem> {
                         indent: 15.0,
                         endIndent: 15.0,
                       ),
-                      // Row(
-                      //   children: studentList(course!.studentCourses),
-                      // ),
-                      // ListView.builder(
-                      //   itemCount: course?.studentCourses?.length,
-                      //   itemBuilder: (context, innerIndex) {
-                      //     // final item = course?.studentCourses?[index];
-                      //     // final title = item?.student?.name ?? '';
-
-                      //     return listTile(
-                      //         title: '地點：',
-                      //         subtitle: course?.classRoom?.name ?? '');
-                      //   },
-                      // ),
                       listTile(
                           title: '地點：',
                           subtitle: course?.classRoom?.name ?? ''),

@@ -79,6 +79,38 @@ class ApiService {
   }
 
   //----------以下老師部分
+  // 新增老師
+  static Future<void> teacherCreate(dynamic json) async {
+    // 新增資料
+    final teacherData = json['teacher'];
+    final customer = json['customer'];
+    try {
+      await Supabase.instance.client.from('teachers').insert(teacherData);
+
+      final teacher = await getLastTeacher();
+      customer['relative_id'] = teacher!['id'];
+
+      await Supabase.instance.client.from('customers').insert(customer);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  //帳號查詢
+  static Future<Map<String, dynamic>?> accountCheck(String account) async {
+    final Map<String, dynamic>? user;
+    try {
+      user = await Supabase.instance.client
+          .from('customers')
+          .select('*')
+          .eq('account', account)
+          .maybeSingle();
+      return user;
+    } catch (e) {
+      throw e;
+    }
+  }
+
   // 老師登入
   static Future<Map<String, dynamic>?> teacherLogin(
       String account, String password) async {
@@ -109,6 +141,22 @@ class ApiService {
           .eq('teacher_id', teacherId)
           .order('id', ascending: false);
       return courseList;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // 取得最新的老師
+  static Future<Map<String, dynamic>?> getLastTeacher() async {
+    final Map<String, dynamic> teacher;
+    try {
+      teacher = await Supabase.instance.client
+          .from('teachers')
+          .select('*')
+          .order('id', ascending: false)
+          .limit(1)
+          .single();
+      return teacher;
     } catch (e) {
       throw e;
     }
