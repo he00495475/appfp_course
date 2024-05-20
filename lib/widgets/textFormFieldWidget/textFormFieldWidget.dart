@@ -9,7 +9,7 @@ Widget textFormField(
   return TextFormField(
     controller: controller,
     enabled: enabled,
-    maxLines: 2,
+    maxLines: null,
     decoration: InputDecoration(
       labelText: labelText,
       labelStyle: const TextStyle(fontSize: 16),

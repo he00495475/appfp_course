@@ -110,9 +110,8 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       // 學生選課 預先帶入老師每週課程日
       if (widget.courseViewModel.userType == UserType.student) {
         final daysOfWeek = widget.courseViewModel.studentCourseDaysOfWeek;
-        final List<String> studentDayOfWeek = (daysOfWeek != null)
-            ? daysOfWeek.replaceAll(' ', '').split(',')
-            : [];
+        final List<String> studentDayOfWeek =
+            (daysOfWeek != '') ? daysOfWeek.replaceAll(' ', '').split(',') : [];
         teacherDaysOfWeek = course.courseWeek.split(',');
 
         selectedDays = BaseHelper.getDaysOfTwoWeekIndexs(

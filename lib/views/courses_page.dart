@@ -116,10 +116,41 @@ class _CourseListItemState extends State<CourseListItem> {
     }
   }
 
-  Widget listTile(String title, String subtitle) {
+  // List<Widget> studentList(List<StudentCourse>? list) {
+  //   List<Widget> items = [];
+  //   if (list != null) {
+  //     items = List<Widget>.generate(list.length,
+  //         (index) => listTile(title: list[index].student?.name ?? ''));
+  //   }
+  //   return items;
+  // }
+
+  void studentList(List<StudentCourse>? list) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('報名的學生'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 200,
+            child: ListView.builder(
+              itemCount: list?.length,
+              itemBuilder: (BuildContext context, int index) {
+                final name = list?[index].student?.name ?? '';
+                return Text(name);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget listTile({String title = '', String subtitle = ''}) {
     return ListTile(
       title: Text(title),
-      subtitle: Text(subtitle),
+      subtitle: (subtitle.isNotEmpty) ? Text(subtitle) : null,
       dense: true,
     );
   }
@@ -161,6 +192,7 @@ class _CourseListItemState extends State<CourseListItem> {
           final course = (customer['type'] == 'teacher')
               ? widget.courseViewModel.courses[index]
               : widget.courseViewModel.studentCourses[index].course;
+
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的間距為8.0
             child: Container(
@@ -222,8 +254,11 @@ class _CourseListItemState extends State<CourseListItem> {
                                       const CourseAddsPage()));
                         },
                       ),
-                      Icon(
-                        isExpanded ? Icons.remove : Icons.add,
+                      IconButton(
+                        icon: const Icon(Icons.person),
+                        onPressed: () {
+                          studentList(course!.studentCourses);
+                        },
                       )
                     ]),
                     initiallyExpanded: isExpanded,
@@ -235,7 +270,7 @@ class _CourseListItemState extends State<CourseListItem> {
                       }
                       setState(() {});
                     },
-                    children: <Widget>[
+                    children: [
                       const Divider(
                         color: Colors.grey,
                         thickness: 1.0,
@@ -243,9 +278,27 @@ class _CourseListItemState extends State<CourseListItem> {
                         indent: 15.0,
                         endIndent: 15.0,
                       ),
-                      listTile('地點：', course?.classRoom?.name ?? ''),
-                      listTile('老師：', course?.teacher?.name ?? ''),
-                      listTile('課程說明：', course?.descript ?? ''),
+                      // Row(
+                      //   children: studentList(course!.studentCourses),
+                      // ),
+                      // ListView.builder(
+                      //   itemCount: course?.studentCourses?.length,
+                      //   itemBuilder: (context, innerIndex) {
+                      //     // final item = course?.studentCourses?[index];
+                      //     // final title = item?.student?.name ?? '';
+
+                      //     return listTile(
+                      //         title: '地點：',
+                      //         subtitle: course?.classRoom?.name ?? '');
+                      //   },
+                      // ),
+                      listTile(
+                          title: '地點：',
+                          subtitle: course?.classRoom?.name ?? ''),
+                      listTile(
+                          title: '老師：', subtitle: course?.teacher?.name ?? ''),
+                      listTile(
+                          title: '課程說明：', subtitle: course?.descript ?? ''),
                     ],
                   ),
                 ],
