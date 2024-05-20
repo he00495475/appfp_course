@@ -33,8 +33,9 @@ class ApiService {
       courseList = await Supabase.instance.client
           .from('student_courses')
           .select(
-              '*, courses(*, teachers(*, jobs(*)), classroom(*), student_courses(*))')
-          .eq('student_id', studentId);
+              '*, courses(*, teachers(*, jobs(*)), classroom(*)), students(*)')
+          .eq('student_id', studentId)
+          .order('id', ascending: false);
       return courseList;
     } catch (e) {
       throw e;
@@ -103,8 +104,10 @@ class ApiService {
     try {
       courseList = await Supabase.instance.client
           .from('courses')
-          .select('*, teachers(*, jobs(*)), classroom(*)')
-          .eq('teacher_id', teacherId);
+          .select(
+              '*, teachers(*, jobs(*)), classroom(*), student_courses(*, students(*))')
+          .eq('teacher_id', teacherId)
+          .order('id', ascending: false);
       return courseList;
     } catch (e) {
       throw e;
@@ -117,7 +120,8 @@ class ApiService {
     try {
       teacherList = await Supabase.instance.client
           .from('teachers')
-          .select('*, jobs(*), courses(*, classroom(*), teachers(*))');
+          .select('*, jobs(*), courses(*, classroom(*), teachers(*))')
+          .order('id', ascending: false);
       return teacherList;
     } catch (e) {
       throw e;
@@ -128,7 +132,10 @@ class ApiService {
   static Future<List<Map<String, dynamic>>?> getRoomList() async {
     final List<Map<String, dynamic>> roomList;
     try {
-      roomList = await Supabase.instance.client.from('classroom').select('*');
+      roomList = await Supabase.instance.client
+          .from('classroom')
+          .select('*')
+          .order('id', ascending: false);
       return roomList;
     } catch (e) {
       throw e;

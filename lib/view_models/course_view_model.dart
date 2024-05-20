@@ -1,5 +1,6 @@
 import 'package:appfp_course/models/course_create.dart';
 import 'package:appfp_course/models/course_modify.dart';
+import 'package:appfp_course/models/student_course.dart';
 import 'package:appfp_course/models/student_course_create.dart';
 import 'package:appfp_course/models/student_course_modify.dart';
 import 'package:appfp_course/service/api_service.dart';
@@ -13,6 +14,11 @@ enum UserType { teacher, student }
 class CourseViewModel extends ChangeNotifier {
   List<Course> _courses = [];
   List<Course> get courses => _courses;
+
+  List<StudentCourse> _studentCourses = [];
+  List<StudentCourse> get studentCourses => _studentCourses;
+  int studentCourseId = 0;
+  String studentCourseDaysOfWeek = '';
 
   Course course = Course(); //修改課程 or 加入課程用
 
@@ -31,14 +37,13 @@ class CourseViewModel extends ChangeNotifier {
 
   //取得學生所有課程
   void fetchCoursesByStudentId(int studentId) async {
-    final student_course = await ApiService.getStudentCourses(studentId);
-    if (student_course == null) {
+    final json = await ApiService.getStudentCourses(studentId);
+    if (json == null) {
       return;
     }
-    final courses =
-        student_course.map((e) => Course.fromJson(e['courses'])).toList();
+    final studentCourses = StudentCourse.fromList(json);
 
-    _courses = courses;
+    _studentCourses = studentCourses;
 
     notifyListeners();
   }

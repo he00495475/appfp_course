@@ -19,4 +19,8 @@ class Student {
       gender: json['gender'],
     );
   }
+
+  static List<Student> fromList(List jsonList) {
+    return jsonList.map((json) => Student.fromJson(json)).toList();
+  }
 }

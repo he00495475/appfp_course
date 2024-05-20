@@ -1,4 +1,6 @@
 import 'package:appfp_course/helper/databaseHelper.dart';
+import 'package:appfp_course/models/course.dart';
+import 'package:appfp_course/models/student_course.dart';
 import 'package:appfp_course/views/courses_add_page.dart';
 import 'package:appfp_course/widgets/alertWidget/iconButtonConfirmActionWidget.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,8 @@ class CoursesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final courseViewModel = Provider.of<CourseViewModel>(context);
+    List<Course> course = [];
+    List<StudentCourse> studentCourse = [];
     //sqfLite
     final databaseHelper = DatabaseHelper();
     Map<String, dynamic> customer = {};
@@ -23,8 +27,10 @@ class CoursesPage extends StatelessWidget {
       } else {
         if (customer['type'] == 'teacher') {
           courseViewModel.fetchCoursesByTeacherId(customer['id']);
+          course = courseViewModel.courses;
         } else {
           courseViewModel.fetchCoursesByStudentId(customer['id']);
+          studentCourse = courseViewModel.studentCourses;
         }
       }
     });
@@ -34,6 +40,8 @@ class CoursesPage extends StatelessWidget {
         courseViewModel: courseViewModel,
         customer: customer,
         databaseHelper: databaseHelper,
+        studentCourse: studentCourse,
+        course: course,
       ),
     );
   }
@@ -43,12 +51,16 @@ class CourseListItem extends StatefulWidget {
   final CourseViewModel courseViewModel;
   final Map<String, dynamic> customer;
   final DatabaseHelper databaseHelper;
+  final List<StudentCourse> studentCourse;
+  final List<Course> course;
 
   const CourseListItem({
     super.key,
     required this.courseViewModel,
     required this.customer,
     required this.databaseHelper,
+    required this.studentCourse,
+    required this.course,
   });
 
   @override
@@ -76,24 +88,32 @@ class _CourseListItemState extends State<CourseListItem> {
 
   // 老師刪除課程
   void deleteCourse(int index) {
-    widget.courseViewModel.deleteCourse(index);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('刪除成功'),
-        backgroundColor: Colors.green, // 設置成功提示的背景色
-      ),
-    );
+    try {
+      widget.courseViewModel.deleteCourse(index);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('刪除成功'),
+          backgroundColor: Colors.green, // 設置成功提示的背景色
+        ),
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   // 學生刪除課程
-  void deleteStudentCourse(int index) {
-    widget.courseViewModel.deleteStudentCourse(index);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('刪除成功'),
-        backgroundColor: Colors.green, // 設置成功提示的背景色
-      ),
-    );
+  void deleteStudentCourse(int index) async {
+    try {
+      await widget.courseViewModel.deleteStudentCourse(index);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('刪除成功'),
+          backgroundColor: Colors.green, // 設置成功提示的背景色
+        ),
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   Widget listTile(String title, String subtitle) {
@@ -133,10 +153,14 @@ class _CourseListItemState extends State<CourseListItem> {
       ),
       body: ListView.builder(
         key: Key(widget.courseViewModel.expandedIndex.toString()),
-        itemCount: widget.courseViewModel.courses.length,
+        itemCount: (customer['type'] == 'teacher')
+            ? widget.courseViewModel.courses.length
+            : widget.courseViewModel.studentCourses.length,
         itemBuilder: (context, index) {
           final isExpanded = widget.courseViewModel.expandedIndex == index;
-          final course = widget.courseViewModel.courses[index];
+          final course = (customer['type'] == 'teacher')
+              ? widget.courseViewModel.courses[index]
+              : widget.courseViewModel.studentCourses[index].course;
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的間距為8.0
             child: Container(
@@ -148,7 +172,7 @@ class _CourseListItemState extends State<CourseListItem> {
               child: Column(
                 children: [
                   ExpansionTile(
-                    title: Text(course.name),
+                    title: Text(course?.name ?? ''),
                     collapsedShape: const RoundedRectangleBorder(
                       side: BorderSide.none,
                     ),
@@ -157,16 +181,17 @@ class _CourseListItemState extends State<CourseListItem> {
                     ),
                     childrenPadding: EdgeInsets.zero,
                     subtitle: Text(
-                        '每週${course.courseWeek} ${course.courseStartTime} - ${course.courseEndTime}'),
+                        '每週${course?.courseWeek} ${course?.courseStartTime} - ${course?.courseEndTime}'),
                     trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                       IconButtonConfirmActionWidget(
                         titleMessage: '是否刪除課程??',
-                        subMessage: '課程名稱：${course.name}',
+                        subMessage: '課程名稱：${course?.name}',
                         onConfirm: () {
                           if (customer['type'] == 'student') {
-                            deleteStudentCourse(course.studentCourse!.id);
+                            deleteStudentCourse(widget
+                                .courseViewModel.studentCourses[index].id);
                           } else {
-                            deleteCourse(course.id);
+                            deleteCourse(course!.id);
                           }
                         },
                       ),
@@ -176,7 +201,7 @@ class _CourseListItemState extends State<CourseListItem> {
                           //點擊跳轉詳細頁
                           widget.courseViewModel.coursePageType =
                               CoursePageType.modify;
-                          widget.courseViewModel.course = course;
+                          widget.courseViewModel.course = course ?? Course();
 
                           if (customer['type'] == 'student') {
                             widget.courseViewModel.userType = UserType.student;
@@ -184,6 +209,11 @@ class _CourseListItemState extends State<CourseListItem> {
                                 CoursePageType.modify;
                             widget.courseViewModel.studentCourseType =
                                 CoursePageType.modify;
+                            widget.courseViewModel.studentCourseId =
+                                widget.courseViewModel.studentCourses[index].id;
+                            widget.courseViewModel.studentCourseDaysOfWeek =
+                                widget.courseViewModel.studentCourses[index]
+                                    .courseWeek;
                           }
                           Navigator.push(
                               context,
@@ -213,9 +243,9 @@ class _CourseListItemState extends State<CourseListItem> {
                         indent: 15.0,
                         endIndent: 15.0,
                       ),
-                      listTile('地點：', course.classRoom?.name ?? ''),
-                      listTile('老師：', course.teacher?.name ?? ''),
-                      listTile('課程說明：', course.descript),
+                      listTile('地點：', course?.classRoom?.name ?? ''),
+                      listTile('老師：', course?.teacher?.name ?? ''),
+                      listTile('課程說明：', course?.descript ?? ''),
                     ],
                   ),
                 ],

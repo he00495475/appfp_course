@@ -109,8 +109,9 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       final courseWeek = course.courseWeek.replaceAll(' ', '').split(',');
       // 學生選課 預先帶入老師每週課程日
       if (widget.courseViewModel.userType == UserType.student) {
-        final List<String> studentDayOfWeek = (course.studentCourse != null)
-            ? course.studentCourse!.courseWeek.replaceAll(' ', '').split(',')
+        final daysOfWeek = widget.courseViewModel.studentCourseDaysOfWeek;
+        final List<String> studentDayOfWeek = (daysOfWeek != null)
+            ? daysOfWeek.replaceAll(' ', '').split(',')
             : [];
         teacherDaysOfWeek = course.courseWeek.split(',');
 
@@ -233,7 +234,7 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
   void studentModifyCourse() {
     final customer = sqlData.first;
     widget.courseViewModel.modifyStudentCourse(
-      id: course.studentCourse!.id,
+      id: widget.courseViewModel.studentCourseId,
       courseWeek: selectedDays
           .map((e) => teacherDaysOfWeek[e])
           .join(', '), // 使用join串接選擇的天數
@@ -243,7 +244,7 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('修改'),
+        content: Text('修改成功'),
         backgroundColor: Colors.green, // 設置成功提示的背景色
       ),
     );

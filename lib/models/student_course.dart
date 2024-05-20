@@ -18,9 +18,13 @@ class StudentCourse {
     return StudentCourse(
       id: json['id'],
       courseWeek: json['course_week'],
-      course: json['course'] != null ? Course.fromJson(json['course']) : null,
+      course: json['courses'] != null ? Course.fromJson(json['courses']) : null,
       student:
-          json['student'] != null ? Student.fromJson(json['student']) : null,
+          json['students'] != null ? Student.fromJson(json['students']) : null,
     );
+  }
+
+  static List<StudentCourse> fromList(List jsonList) {
+    return jsonList.map((json) => StudentCourse.fromJson(json)).toList();
   }
 }
