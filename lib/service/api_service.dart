@@ -30,7 +30,7 @@ class ApiService {
     try {
       courseList = await Supabase.instance.client
           .from('student_courses')
-          .select('*, courses(*), teachers(*, jobs(*)), classroom(*)')
+          .select('*, courses(*, teachers(*, jobs(*)), classroom(*))')
           .eq('student_id', studentId);
       return courseList;
     } catch (e) {

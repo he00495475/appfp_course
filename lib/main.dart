@@ -1,5 +1,7 @@
+import 'package:appfp_course/helper/databaseHelper.dart';
 import 'package:appfp_course/view_models/room_view_model.dart';
 import 'package:appfp_course/view_models/teacher_view_model.dart';
+import 'package:appfp_course/views/home_page.dart';
 import 'package:appfp_course/views/teachers_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +12,7 @@ import 'views/login_page.dart';
 import 'views/courses_page.dart';
 
 enum BottomNavItem {
+  home,
   course,
   teacher,
 }
@@ -58,15 +61,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  BottomNavItem _selectedItem = BottomNavItem.course;
+  // sqfLite
+  late DatabaseHelper databaseHelper;
+  Map<String, dynamic> customer = {};
+
+  @override
+  void initState() {
+    super.initState();
+    databaseHelper = DatabaseHelper();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    final customers = await databaseHelper.getData();
+    if (customers.isNotEmpty) {
+      customer = customers.first;
+      setState(() {});
+    }
+  }
+
+  BottomNavItem _selectedItem = BottomNavItem.home;
 
   final List<Widget> _widgetOptions = <Widget>[
+    const HomePage(),
     const CoursesPage(),
     const TeachersPage(),
   ];
 
   final List<BottomNavigationBarItem> _bottomNavigationBarItem =
       <BottomNavigationBarItem>[
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: '首頁',
+    ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.menu_book),
       label: '我的課程',
@@ -81,22 +108,26 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Consumer<CustomerViewModel>(
       builder: (context, userViewModel, child) {
-        if (userViewModel.customer != null) {
+        if (customer.isNotEmpty || userViewModel.customer != null) {
           return Scaffold(
-            body: Center(
-              child: _widgetOptions.elementAt(_selectedItem.index),
-            ),
-            bottomNavigationBar: (userViewModel.isTeacher)
-                ? BottomNavigationBar(
-                    currentIndex: _selectedItem.index,
-                    onTap: _onItemTapped,
-                    items: _bottomNavigationBarItem,
-                  )
-                : null,
-          );
+              body: Center(
+                child: _widgetOptions.elementAt(_selectedItem.index),
+              ),
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: _selectedItem.index,
+                onTap: _onItemTapped,
+                items: (userViewModel.isTeacher)
+                    ? [
+                        _bottomNavigationBarItem.elementAt(0),
+                        _bottomNavigationBarItem.elementAt(1)
+                      ]
+                    : _bottomNavigationBarItem,
+              ));
         } else {
-          return const Scaffold(
-            body: LoginPage(),
+          return Scaffold(
+            body: LoginPage(
+              onLoginCallback: () {},
+            ),
           );
         }
       },

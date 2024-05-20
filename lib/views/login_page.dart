@@ -4,16 +4,24 @@ import 'package:provider/provider.dart';
 import '../view_models/customer_view_model.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  final VoidCallback? onLoginCallback;
+  const LoginPage({super.key, this.onLoginCallback});
 
   @override
   Widget build(BuildContext context) {
-    return const MyWidget();
+    final userViewModel = Provider.of<CustomerViewModel>(context);
+    return MyWidget(
+        userViewModel: userViewModel, onLoginCallback: onLoginCallback);
   }
 }
 
 class MyWidget extends StatefulWidget {
-  const MyWidget({super.key});
+  final VoidCallback? onLoginCallback;
+  final CustomerViewModel userViewModel;
+  const MyWidget(
+      {super.key,
+      required CustomerViewModel this.userViewModel,
+      this.onLoginCallback});
 
   @override
   State<MyWidget> createState() => _MyWidgetState();
@@ -43,22 +51,20 @@ class _MyWidgetState extends State<MyWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final userViewModel = Provider.of<CustomerViewModel>(context);
-
     //登入帳號寫入sqflite
     Future<void> setSqfLite() async {
       databaseHelper.clearTable(); //每次登入只存一筆登入人資訊
-      final type = userViewModel.customer?.type;
+      final type = widget.userViewModel.customer?.type;
 
       if (type == 'student') {
-        final student = userViewModel.customer?.student;
+        final student = widget.userViewModel.customer?.student;
         await databaseHelper.insertData(
             {'id': student?.id, 'name': student?.name, 'type': 'student'});
       } else if (type == 'teacher') {
-        final teacher = userViewModel.customer?.teacher;
+        final teacher = widget.userViewModel.customer?.teacher;
         await databaseHelper.insertData(
             {'id': teacher?.id, 'name': teacher?.name, 'type': 'teacher'});
-      } else {}
+      }
     }
 
     void checkLogin() {
@@ -66,12 +72,12 @@ class _MyWidgetState extends State<MyWidget> {
       Future<String> result;
       if (_selectedLoginIndex == 0) {
         //學生登入
-        result = userViewModel.studentLogin(
-            _accountController.text, _passwordController.text);
+        result = widget.userViewModel
+            .studentLogin(_accountController.text, _passwordController.text);
       } else {
         //老師登入
-        result = userViewModel.teacherLogin(
-            _accountController.text, _passwordController.text);
+        result = widget.userViewModel
+            .teacherLogin(_accountController.text, _passwordController.text);
       }
       result.then((errMessage) => {
             if (errMessage != '')
@@ -137,6 +143,9 @@ class _MyWidgetState extends State<MyWidget> {
             ElevatedButton(
               onPressed: () async {
                 checkLogin();
+                if (widget.onLoginCallback != null) {
+                  widget.onLoginCallback!();
+                }
               },
               child: const Text('登入'),
             ),

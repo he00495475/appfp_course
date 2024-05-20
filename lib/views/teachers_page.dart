@@ -140,7 +140,15 @@ class _TeacherListItemState extends State<TeacherListItem> {
                       size: 18,
                     ),
                     dense: true,
-                    onTap: () {},
+                    onTap: () {
+                      // widget.courseViewModel.coursePageType =
+                      //     CoursePageType.modify;
+                      // widget.courseViewModel.modifyIndex = widget.index;
+                      // Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //         builder: (context) => const CourseAddsPage()));
+                    },
                   );
                 },
               ),
