@@ -75,9 +75,26 @@ class _CourseListItemState extends State<CourseListItem> {
     }
   }
 
-  // 刪除課程
+  // 老師刪除課程
   void deleteCourse(int index) {
     widget.courseViewModel.deleteCourse(index);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('刪除成功'),
+        backgroundColor: Colors.green, // 設置成功提示的背景色
+      ),
+    );
+  }
+
+  // 學生刪除課程
+  void deleteStudentCourse(int index) {
+    widget.courseViewModel.deleteStudentCourse(index);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('刪除成功'),
+        backgroundColor: Colors.green, // 設置成功提示的背景色
+      ),
+    );
   }
 
   Widget listTile(String title, String subtitle) {
@@ -147,7 +164,11 @@ class _CourseListItemState extends State<CourseListItem> {
                         titleMessage: '是否刪除課程??',
                         subMessage: '課程名稱：${course.name}',
                         onConfirm: () {
-                          deleteCourse(course.id);
+                          if (customer['type'] == 'student') {
+                            deleteStudentCourse(course.studentCourse!.id);
+                          } else {
+                            deleteCourse(course.id);
+                          }
                         },
                       ),
                       IconButton(
@@ -156,8 +177,15 @@ class _CourseListItemState extends State<CourseListItem> {
                           //點擊跳轉詳細頁
                           widget.courseViewModel.coursePageType =
                               CoursePageType.modify;
-                          // widget.courseViewModel.courseId = widget.course.id;
                           widget.courseViewModel.course = course;
+
+                          if (customer['type'] == 'student') {
+                            widget.courseViewModel.userType = UserType.student;
+                            widget.courseViewModel.coursePageType =
+                                CoursePageType.modify;
+                            widget.courseViewModel.studentCourseType =
+                                CoursePageType.modify;
+                          }
                           Navigator.push(
                               context,
                               MaterialPageRoute(

@@ -1,5 +1,7 @@
 import 'package:appfp_course/models/course_create.dart';
 import 'package:appfp_course/models/course_modify.dart';
+import 'package:appfp_course/models/student_course_create.dart';
+import 'package:appfp_course/models/student_course_modify.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ApiService {
@@ -30,7 +32,8 @@ class ApiService {
     try {
       courseList = await Supabase.instance.client
           .from('student_courses')
-          .select('*, courses(*, teachers(*, jobs(*)), classroom(*))')
+          .select(
+              '*, courses(*, teachers(*, jobs(*)), classroom(*), student_courses(*))')
           .eq('student_id', studentId);
       return courseList;
     } catch (e) {
@@ -38,6 +41,43 @@ class ApiService {
     }
   }
 
+  // 學生新增課程
+  Future<void> studentCourseCreate(StudentCourseCreate courseCreate) async {
+    try {
+      await Supabase.instance.client
+          .from('student_courses')
+          .insert(courseCreate);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // 學生修改課程
+  Future<void> studentCourseModify(
+      StudentCourseModify studentCourseModify) async {
+    try {
+      await Supabase.instance.client
+          .from('student_courses')
+          .update(studentCourseModify.toJson())
+          .match({'id': studentCourseModify.id});
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // 學生刪除課程
+  void studentCourseDelete(int studentCourseId) async {
+    try {
+      await Supabase.instance.client
+          .from('student_courses')
+          .delete()
+          .match({'id': studentCourseId});
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  //----------以下老師部分
   // 老師登入
   static Future<Map<String, dynamic>?> teacherLogin(
       String account, String password) async {
@@ -77,7 +117,7 @@ class ApiService {
     try {
       teacherList = await Supabase.instance.client
           .from('teachers')
-          .select('*, jobs(*), courses(*)');
+          .select('*, jobs(*), courses(*, classroom(*), teachers(*))');
       return teacherList;
     } catch (e) {
       throw e;

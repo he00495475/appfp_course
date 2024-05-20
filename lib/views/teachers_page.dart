@@ -1,3 +1,4 @@
+import 'package:appfp_course/models/course.dart';
 import 'package:appfp_course/view_models/course_view_model.dart';
 import 'package:appfp_course/views/courses_add_page.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ class TeachersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final teacherViewModel = Provider.of<TeacherViewModel>(context);
+    final courseViewModel = Provider.of<CourseViewModel>(context);
 
     // 在頁面加載時調用fetchTeachers()
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -30,6 +32,7 @@ class TeachersPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0), // 垂直方向上的间距为8.0
             child: TeacherListItem(
               teacherViewModel: teacherViewModel,
+              courseViewModel: courseViewModel,
               teacher: teacher,
               index: index,
             ),
@@ -42,6 +45,7 @@ class TeachersPage extends StatelessWidget {
 
 class TeacherListItem extends StatefulWidget {
   final TeacherViewModel teacherViewModel;
+  final CourseViewModel courseViewModel;
   final Teacher teacher;
   final int index;
 
@@ -49,7 +53,8 @@ class TeacherListItem extends StatefulWidget {
       {super.key,
       required this.teacher,
       required this.index,
-      required this.teacherViewModel});
+      required this.teacherViewModel,
+      required this.courseViewModel});
 
   @override
   State<TeacherListItem> createState() => _TeacherListItemState();
@@ -141,13 +146,17 @@ class _TeacherListItemState extends State<TeacherListItem> {
                     ),
                     dense: true,
                     onTap: () {
-                      // widget.courseViewModel.coursePageType =
-                      //     CoursePageType.modify;
-                      // widget.courseViewModel.modifyIndex = widget.index;
-                      // Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (context) => const CourseAddsPage()));
+                      final courses = widget.teacher.courses!;
+                      widget.courseViewModel.course = courses[innerIndex];
+                      widget.courseViewModel.userType = UserType.student;
+                      widget.courseViewModel.coursePageType =
+                          CoursePageType.modify;
+                      widget.courseViewModel.studentCourseType =
+                          CoursePageType.add;
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const CourseAddsPage()));
                     },
                   );
                 },

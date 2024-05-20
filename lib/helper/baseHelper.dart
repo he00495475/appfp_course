@@ -24,4 +24,18 @@ class BaseHelper {
 
     return selectedDays;
   }
+
+  static List<int> getDaysOfTwoWeekIndexs(
+      List<String> courseWeek, List<String> teacherWeek) {
+    List<int> selectedDays = [];
+    final oneWeekData = courseWeek.join(',').replaceAll(' ', '').split(',');
+    final secondWeekData = teacherWeek.join(',').replaceAll(' ', '').split(',');
+    for (final day in oneWeekData) {
+      if (secondWeekData.contains(day)) {
+        selectedDays.add(secondWeekData.indexOf(day));
+      }
+    }
+
+    return selectedDays;
+  }
 }

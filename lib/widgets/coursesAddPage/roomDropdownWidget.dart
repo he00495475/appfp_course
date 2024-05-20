@@ -8,12 +8,14 @@ class RoomDropdown extends StatelessWidget {
   final String selectedRoom;
   final Function(Object?) onChanged;
   final List<ClassRoom> classRooms;
+  final bool enabled;
 
   const RoomDropdown({
     super.key,
     required this.selectedRoom,
     required this.onChanged,
     required this.classRooms,
+    required this.enabled,
   });
 
   @override
@@ -22,7 +24,7 @@ class RoomDropdown extends StatelessWidget {
       builder: (context, viewModel, child) {
         return DropdownButtonFormField<Object?>(
           value: selectedRoom.isEmpty ? null : selectedRoom,
-          onChanged: onChanged,
+          onChanged: enabled ? onChanged : null,
           items: viewModel.classRooms.isNotEmpty
               ? viewModel.classRooms.map((room) {
                   return DropdownMenuItem(

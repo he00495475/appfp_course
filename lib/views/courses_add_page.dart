@@ -5,6 +5,7 @@ import 'package:appfp_course/models/course.dart';
 import 'package:appfp_course/view_models/course_view_model.dart';
 import 'package:appfp_course/view_models/room_view_model.dart';
 import 'package:appfp_course/widgets/coursesAddPage/roomDropdownWidget.dart';
+import 'package:appfp_course/widgets/textFormFieldWidget/textFormFieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -59,12 +60,15 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
   final DatabaseHelper databaseHelper = DatabaseHelper();
 
   // 畫面元件控制
-  final TextEditingController _descriptController = TextEditingController();
+  bool enable = false;
+  final TextEditingController _teacherController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptController = TextEditingController();
   TimeOfDay _startTime = TimeOfDay.now();
   TimeOfDay _endTime = TimeOfDay.now();
   String selectedRoom = '';
   List<int> selectedDays = [];
+  List<String> teacherDaysOfWeek = []; //老師課程的每週幾
   List<Map<String, dynamic>> sqlData = [];
 
   @override
@@ -89,6 +93,9 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       }
 
       // 控制器預設值給予
+      enable =
+          (widget.courseViewModel.userType == UserType.teacher) ? true : false;
+      _teacherController.text = course.teacher?.name ?? '';
       _nameController.text = course.name;
       _descriptController.text = course.descript;
       _startTime = BaseHelper.convertStringToTimeOfDay(
@@ -100,10 +107,25 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       selectedRoom = roomIndex ?? '';
 
       final courseWeek = course.courseWeek.replaceAll(' ', '').split(',');
-      selectedDays = BaseHelper.getDaysOfWeekIndexs(courseWeek);
+      // 學生選課 預先帶入老師每週課程日
+      if (widget.courseViewModel.userType == UserType.student) {
+        final List<String> studentDayOfWeek = (course.studentCourse != null)
+            ? course.studentCourse!.courseWeek.replaceAll(' ', '').split(',')
+            : [];
+        teacherDaysOfWeek = course.courseWeek.split(',');
+
+        selectedDays = BaseHelper.getDaysOfTwoWeekIndexs(
+            studentDayOfWeek, teacherDaysOfWeek);
+      } else {
+        // 老師新增修改課程時的每週選課日為1~7
+        teacherDaysOfWeek = BaseHelper.daysOfWeek;
+
+        selectedDays = BaseHelper.getDaysOfWeekIndexs(courseWeek);
+      }
     });
   }
 
+  // 送出 老師新增課程
   void addCourse() {
     final customer = sqlData.first;
     widget.courseViewModel.addCourse(
@@ -119,8 +141,16 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       classRoomId: int.parse(selectedRoom),
       teacherId: customer['id'],
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('新增成功'),
+        backgroundColor: Colors.green, // 設置成功提示的背景色
+      ),
+    );
   }
 
+  // 送出 老師修改課程
   void modifyCourse() {
     final customer = sqlData.first;
     widget.courseViewModel.modifyCourse(
@@ -137,9 +167,16 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
       classRoomId: int.parse(selectedRoom),
       teacherId: customer['id'],
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('修改成功'),
+        backgroundColor: Colors.green, // 設置成功提示的背景色
+      ),
+    );
   }
 
-  //送出表單
+  //送出表單 老師新增修改課程
   void submit() async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
     //這邊簡單做每週選擇驗證
@@ -155,9 +192,6 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
     }
 
     try {
-      // 取得登入者資訊
-      final customer = sqlData.first;
-
       selectedDays.sort(); // 陣列重新排序
       //送出
       final pageType = widget.courseViewModel.coursePageType;
@@ -167,12 +201,79 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
         addCourse();
       }
 
+      Navigator.pop(context);
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('新增成功'),
-          backgroundColor: Colors.green, // 設置成功提示的背景色
+        SnackBar(
+          content: Text('發生錯誤: $e'),
+          backgroundColor: Colors.red, // 設置錯誤提示的背景色
         ),
       );
+    }
+  }
+
+  // 學生選課 新增
+  void studentAddCourse() {
+    final customer = sqlData.first;
+    final selectedDay = selectedDays.map((e) => teacherDaysOfWeek[e]).join(',');
+    widget.courseViewModel.addStudentCourse(
+      courseWeek: selectedDay, // 使用join串接選擇的天數
+      courseId: course.id,
+      studentId: customer['id'],
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('新增成功'),
+        backgroundColor: Colors.green, // 設置成功提示的背景色
+      ),
+    );
+  }
+
+  void studentModifyCourse() {
+    final customer = sqlData.first;
+    widget.courseViewModel.modifyStudentCourse(
+      id: course.studentCourse!.id,
+      courseWeek: selectedDays
+          .map((e) => teacherDaysOfWeek[e])
+          .join(', '), // 使用join串接選擇的天數
+      courseId: course.id,
+      studentId: customer['id'],
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('修改'),
+        backgroundColor: Colors.green, // 設置成功提示的背景色
+      ),
+    );
+  }
+
+  //送出表單 學生新增修改課程
+  void studentSubmit() async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
+    //這邊簡單做每週選擇驗證
+    if (selectedDays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('請選擇每週上課日'),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      return;
+    }
+
+    try {
+      selectedDays.sort(); // 陣列重新排序
+      //送出
+      final pageType = widget.courseViewModel.studentCourseType;
+      if (pageType == CoursePageType.modify) {
+        studentModifyCourse();
+      } else {
+        studentAddCourse();
+      }
+
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -196,30 +297,21 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: '課程名稱'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '請輸入課程名稱！';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  maxLines: 3,
+                textFormField(
+                    controller: _nameController,
+                    enabled: enable,
+                    labelText: '課程名稱',
+                    validatorText: '請輸入課程名稱！'),
+                textFormField(
                   controller: _descriptController,
-                  decoration: const InputDecoration(labelText: '課程描述'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '請輸入課程描述！';
-                    }
-                    return null;
-                  },
+                  enabled: enable,
+                  labelText: '課程描述',
+                  validatorText: '請輸入課程描述！',
                 ),
                 const SizedBox(height: 16.0),
                 RoomDropdown(
                   selectedRoom: selectedRoom,
+                  enabled: enable,
                   onChanged: (newValue) {
                     setState(() {
                       selectedRoom = newValue.toString();
@@ -233,20 +325,21 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('開始時間: ${_startTime.format(context)}'),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: const Text('選擇時間(開始結束)'),
-                    ).withTimePicker(
-                      context,
-                      _startTime,
-                      _endTime,
-                      onTimeSelected: (startTime, endTime) {
-                        setState(() {
-                          _startTime = startTime;
-                          _endTime = endTime;
-                        });
-                      },
-                    ),
+                    if (enable)
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('選擇時間(開始結束)'),
+                      ).withTimePicker(
+                        context,
+                        _startTime,
+                        _endTime,
+                        onTimeSelected: (startTime, endTime) {
+                          setState(() {
+                            _startTime = startTime;
+                            _endTime = endTime;
+                          });
+                        },
+                      ),
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -259,9 +352,9 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                 const SizedBox(height: 16.0),
                 Wrap(
                   spacing: 10.0,
-                  children: List.generate(7, (index) {
+                  children: List.generate(teacherDaysOfWeek.length, (index) {
                     return FilterChip(
-                      label: Text('每週${BaseHelper.daysOfWeek[index]}'),
+                      label: Text('每週${teacherDaysOfWeek[index]}'),
                       selected: selectedDays.contains(index),
                       onSelected: (selected) {
                         setState(() {
@@ -295,7 +388,12 @@ class _CourseAddListItemState extends State<CourseAddListItem> {
                         if (_formKey.currentState != null &&
                             _formKey.currentState!.validate()) {
                           // 如果表單驗證通過，執行提交邏輯
-                          submit();
+                          if (widget.courseViewModel.userType ==
+                              UserType.student) {
+                            studentSubmit();
+                          } else {
+                            submit();
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(
