@@ -116,12 +116,13 @@ class _MyHomePageState extends State<MyHomePage> {
               bottomNavigationBar: BottomNavigationBar(
                 currentIndex: _selectedItem.index,
                 onTap: _onItemTapped,
-                items: (userViewModel.isTeacher)
-                    ? [
-                        _bottomNavigationBarItem.elementAt(0),
-                        _bottomNavigationBarItem.elementAt(1)
-                      ]
-                    : _bottomNavigationBarItem,
+                items:
+                    (customer['type'] == 'teacher' || userViewModel.isTeacher)
+                        ? [
+                            _bottomNavigationBarItem.elementAt(0),
+                            _bottomNavigationBarItem.elementAt(1)
+                          ]
+                        : _bottomNavigationBarItem,
               ));
         } else {
           return Scaffold(
