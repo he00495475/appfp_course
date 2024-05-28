@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 
 Widget textFormField(
     {required TextEditingController controller,
-    required bool enabled,
+    bool enabled = true,
     required String labelText,
-    String validatorText = ''}) {
+    String validatorText = '',
+    bool obscure = false}) {
   return TextFormField(
     controller: controller,
     enabled: enabled,
-    maxLines: null,
+    maxLines: obscure ? 1 : null,
+    obscureText: obscure,
     decoration: InputDecoration(
       labelText: labelText,
       labelStyle: const TextStyle(fontSize: 16),

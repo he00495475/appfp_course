@@ -12,8 +12,8 @@ class CustomerViewModel extends ChangeNotifier {
 
   bool get isTeacher => _customer?.type == 'teacher';
 
-  Future<String> studentLogin(String account, String password) async {
-    final customer = await ApiService.studentLogin(account, password);
+  Future<String> login(String account, String password, String type) async {
+    final customer = await ApiService.login(account, password, type);
 
     if (customer == null) {
       // 處理錯誤
@@ -24,28 +24,38 @@ class CustomerViewModel extends ChangeNotifier {
       id: customer['id'],
       account: customer['account'],
       type: customer['type'],
-      student: Student.fromJson(customer['students']),
+      relativeId: customer['relative_id'],
     );
     notifyListeners();
 
     return '';
   }
 
-  // 老師登入
-  Future<String> teacherLogin(String account, String password) async {
-    final customer = await ApiService.teacherLogin(account, password);
+  // 取得學生資訊
+  Future<String> getStudent(int id) async {
+    final customer = await ApiService.getStudent(id);
 
     if (customer == null) {
       // 處理錯誤
       return '登入失敗';
     }
 
-    _customer = Customer(
-      id: customer['id'],
-      account: customer['account'],
-      type: customer['type'],
-      teacher: Teacher.fromJson(customer['teachers']),
-    );
+    _customer?.student = Student.fromJson(customer);
+    notifyListeners();
+
+    return '';
+  }
+
+  // 取得老師資訊
+  Future<String> getTeacher(int id) async {
+    final customer = await ApiService.getTeacher(id);
+
+    if (customer == null) {
+      // 處理錯誤
+      return '登入失敗';
+    }
+
+    _customer?.teacher = Teacher.fromJson(customer);
     notifyListeners();
 
     return '';

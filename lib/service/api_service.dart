@@ -7,17 +7,46 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class ApiService {
   final String baseUrl = 'http://your-api-base-url.com'; // 將此替換為您的實際 API 基本 URL
 
-  // 學生登入
-  static Future<Map<String, dynamic>?> studentLogin(
-      String account, String password) async {
+  //帳號查詢
+  static Future<Map<String, dynamic>?> accountCheck(String account) async {
     final Map<String, dynamic>? user;
     try {
       user = await Supabase.instance.client
           .from('customers')
-          .select('*, students(*)')
+          .select('*')
+          .eq('account', account)
+          .maybeSingle();
+      return user;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> login(
+      String account, String password, String type) async {
+    final Map<String, dynamic>? user;
+    try {
+      user = await Supabase.instance.client
+          .from('customers')
+          .select('*')
           .eq('account', account)
           .eq('password', password)
-          .eq('type', 'student')
+          .eq('type', type) //'teacher' or 'student'
+          .maybeSingle();
+      return user;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // 取得學生資訊
+  static Future<Map<String, dynamic>?> getStudent(int id) async {
+    final Map<String, dynamic>? user;
+    try {
+      user = await Supabase.instance.client
+          .from('students')
+          .select('*')
+          .eq('id', id)
           .maybeSingle();
       return user;
     } catch (e) {
@@ -96,32 +125,14 @@ class ApiService {
     }
   }
 
-  //帳號查詢
-  static Future<Map<String, dynamic>?> accountCheck(String account) async {
+  // 取得老師資訊
+  static Future<Map<String, dynamic>?> getTeacher(int id) async {
     final Map<String, dynamic>? user;
     try {
       user = await Supabase.instance.client
-          .from('customers')
+          .from('teachers')
           .select('*')
-          .eq('account', account)
-          .maybeSingle();
-      return user;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  // 老師登入
-  static Future<Map<String, dynamic>?> teacherLogin(
-      String account, String password) async {
-    final Map<String, dynamic>? user;
-    try {
-      user = await Supabase.instance.client
-          .from('customers')
-          .select('*, teachers(*)')
-          .eq('account', account)
-          .eq('password', password)
-          .eq('type', 'teacher')
+          .eq('id', id)
           .maybeSingle();
       return user;
     } catch (e) {

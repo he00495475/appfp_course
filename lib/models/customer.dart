@@ -7,8 +7,8 @@ class Customer {
   final String? password;
   final String type;
   final int? relativeId;
-  final Student? student;
-  final Teacher? teacher;
+  Student? student;
+  Teacher? teacher;
 
   Customer(
       {required this.id,

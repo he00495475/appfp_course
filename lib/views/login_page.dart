@@ -6,6 +6,7 @@ import '../view_models/customer_view_model.dart';
 
 class LoginPage extends StatelessWidget {
   final VoidCallback? onLoginCallback;
+
   const LoginPage({super.key, this.onLoginCallback});
 
   @override
@@ -66,19 +67,17 @@ class _MyWidgetState extends State<MyWidget> {
       }
     }
 
-    void checkLogin() {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
+    Future<void> successLogin() async {
       Future<String> result;
+      int id = widget.userViewModel.customer?.relativeId ?? 0;
       if (_selectedLoginIndex == 0) {
-        //學生登入
-        result = widget.userViewModel
-            .studentLogin(_accountController.text, _passwordController.text);
+        //學生
+        result = widget.userViewModel.getStudent(id);
       } else {
-        //老師登入
-        result = widget.userViewModel
-            .teacherLogin(_accountController.text, _passwordController.text);
+        //老師
+        result = widget.userViewModel.getTeacher(id);
       }
-      result.then((errMessage) => {
+      result.then((errMessage) async => {
             if (errMessage != '')
               {
                 ScaffoldMessenger.of(context)
@@ -87,13 +86,31 @@ class _MyWidgetState extends State<MyWidget> {
             else
               {
                 setSqfLite(),
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('登入成功'),
-                  backgroundColor: Colors.green,
-                ))
+                if (mounted)
+                  {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('登入成功'),
+                      backgroundColor: Colors.green,
+                    ))
+                  }
               }
           });
-      setState(() {});
+    }
+
+    void checkLogin() async {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar(); //預先關閉提示，防止重複彈出
+      String type = '';
+      if (_selectedLoginIndex == 0) {
+        //學生登入
+        type = 'student';
+      } else {
+        //老師登入
+        type = 'teacher';
+      }
+      await widget.userViewModel
+          .login(_accountController.text, _passwordController.text, type);
+
+      await successLogin();
     }
 
     return Scaffold(
@@ -154,14 +171,14 @@ class _MyWidgetState extends State<MyWidget> {
               },
               child: const Text('登入'),
             ),
-            // if (_selectedLoginIndex == 1)
-            //   ElevatedButton(
-            //     onPressed: () async {
-            //       Navigator.push(context,
-            //           MaterialPageRoute(builder: (context) => RegisterPage()));
-            //     },
-            //     child: const Text('註冊'),
-            //   ),
+            if (_selectedLoginIndex == 1)
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => RegisterPage()));
+                },
+                child: const Text('註冊'),
+              ),
           ],
         ),
       ),
